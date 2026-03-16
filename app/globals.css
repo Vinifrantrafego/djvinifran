@@ -127,3 +127,12 @@
     @apply font-sans;
   }
 }
+
+/* Deriva suave — usada por DriftText */
+@keyframes text-drift {
+  0%   { transform: translate(0px, 0px)    rotate(0deg); }
+  20%  { transform: translate(-1.5px, -5px) rotate(0.07deg); }
+  45%  { transform: translate(1.5px, -8px) rotate(-0.1deg); }
+  70%  { transform: translate(2px, -4px)   rotate(0.09deg); }
+  100% { transform: translate(-1px, -6px)  rotate(-0.05deg); }
+}
