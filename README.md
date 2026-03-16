@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# vinifran — Site Oficial
 
-## Getting Started
+Site pessoal do DJ Vini Fran. Portfolio minimalista com efeitos visuais em WebGL, scroll-snap por seções e player de áudio ambiente.
 
-First, run the development server:
+**Deploy:** [Vercel](https://vercel.com) — dark theme, mobile-first
+
+---
+
+## Stack
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| Next.js | 16 (App Router) | Framework principal |
+| React | 19 | UI |
+| TypeScript | 5 | Tipagem |
+| Tailwind CSS | v4 | Estilo |
+| Three.js | 0.183 | Shader WebGL no Hero |
+| shadcn/ui | 4 | Base de componentes |
+| lucide-react | 0.577 | Ícones |
+| Puppeteer | 24 | Screenshots para dev |
+
+---
+
+## Rodar localmente
 
 ```bash
+# Instalar dependências (só na primeira vez)
+cd vinifran-site
+npm install
+
+# Servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse **http://localhost:3000**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Build de produção
+npm run build
+npm run start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Verificar erros de TypeScript
+npx tsc --noEmit
 
-## Learn More
+# Auditoria de segurança das dependências (rodar a cada 6 meses)
+npm audit
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+vinifran-site/
+├── app/
+│   ├── layout.tsx        — dark mode, fontes Cormorant Garamond + Inter
+│   ├── page.tsx          — página principal (4 seções scroll-snap)
+│   └── globals.css       — Tailwind + @keyframes text-drift
+├── components/ui/
+│   ├── web-gl-shader.tsx       — background Three.js (confinado ao Hero)
+│   ├── liquid-glass-button.tsx — botão glass com SVG turbulence
+│   ├── liquid-text.tsx         — efeito de interferência no nome "vinifran"
+│   ├── drift-text.tsx          — deriva suave CSS para textos secundários
+│   ├── ambient-player.tsx      — player de áudio ambiente (fixed bottom-right)
+│   ├── video-section.tsx       — carrossel de vídeos YouTube fullscreen
+│   ├── bio-section.tsx         — bio do DJ + estilos musicais
+│   └── contact-section.tsx     — contato + agenda de shows
+├── lib/
+│   └── utils.ts          — função cn() do shadcn
+├── public/
+│   └── ambient.mp3       — áudio ambiente do player
+└── next.config.ts        — security headers (CSP, X-Frame-Options, etc.)
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Seções
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| # | Seção | Status |
+|---|---|---|
+| 1 | Hero — nome + tagline + CTA | ✅ Pronto |
+| 2 | Vídeos — carrossel YouTube | ✅ Pronto |
+| 3 | Bio / Estilos musicais | ✅ Pronto |
+| 4 | Contato + Agenda | ✅ Pronto |
+| 5 | Galeria de fotos | 🔲 A fazer |
+| 6 | Footer com redes sociais | 🔲 A fazer |
+
+---
+
+## Conteúdo para atualizar
+
+| Item | Arquivo | O que editar |
+|---|---|---|
+| IDs YouTube (3 vídeos) | `components/ui/video-section.tsx` linhas 7–9 | Trocar `id` pelo ID após `?v=` |
+| Áudio ambiente | `public/ambient.mp3` | Substituir pelo arquivo real |
+| Dados de contato | `components/ui/contact-section.tsx` | Ver seção abaixo |
+| Foto do DJ | `bio-section.tsx` | Colocar em `/public/` e referenciar |
+| Shows / eventos | `contact-section.tsx` | Descomentar e editar array `EVENTS` |
+
+### Atualizar dados de contato
+
+Os dados de contato ficam codificados em base64 no arquivo `contact-section.tsx` (proteção contra bots de spam). Para gerar o código de um novo dado:
+
+```bash
+node -e "console.log(Buffer.from('seu-dado-aqui').toString('base64'))"
+```
+
+Cole o resultado no campo correspondente em `CONTACT_ENCODED`.
+
+---
+
+## Segurança
+
+- **Dados de contato ofuscados** — email e telefone são codificados em base64 e decodificados apenas no browser (invisíveis no HTML do servidor)
+- **Security headers** configurados em `next.config.ts`:
+  - `X-Frame-Options: DENY` — bloqueia clickjacking via iframe
+  - `Content-Security-Policy` — restringe fontes de script e permite apenas YouTube nos iframes
+  - `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
+- **Cache longo para mídia** — arquivos `.mp3`/`.mp4` têm `Cache-Control: immutable` para reduzir consumo de banda na Vercel
