@@ -112,12 +112,14 @@ export function WebGLShader() {
 
     const handleResize = () => {
       if (!refs.renderer || !refs.uniforms) return
-      // Usar dimensões reais do canvas (não window.innerHeight, que diverge de
-      // 100vh no mobile quando a barra de endereço aparece/desaparece)
       const width = canvas.offsetWidth
       const height = canvas.offsetHeight
+      const dpr = window.devicePixelRatio || 1
       refs.renderer.setSize(width, height, false)
-      refs.uniforms.resolution.value = [width, height]
+      // gl_FragCoord usa pixels físicos (dpr aplicado pelo renderer),
+      // então resolution também precisa estar em pixels físicos.
+      // Sem isso, em mobile com DPR=3 a luz aparece 83% abaixo do topo.
+      refs.uniforms.resolution.value = [width * dpr, height * dpr]
     }
 
     initScene()
