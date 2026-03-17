@@ -68,7 +68,7 @@ export function WebGLShader() {
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
 
       refs.uniforms = {
-        resolution: { value: [window.innerWidth, window.innerHeight] },
+        resolution: { value: [canvas.offsetWidth, canvas.offsetHeight] },
         time: { value: 0.0 },
         xScale: { value: 1.0 },
         yScale: { value: 0.5 },
@@ -112,18 +112,25 @@ export function WebGLShader() {
 
     const handleResize = () => {
       if (!refs.renderer || !refs.uniforms) return
-      const width = window.innerWidth
-      const height = window.innerHeight
+      // Usar dimensões reais do canvas (não window.innerHeight, que diverge de
+      // 100vh no mobile quando a barra de endereço aparece/desaparece)
+      const width = canvas.offsetWidth
+      const height = canvas.offsetHeight
       refs.renderer.setSize(width, height, false)
       refs.uniforms.resolution.value = [width, height]
     }
 
     initScene()
     animate()
+    // ResizeObserver reage ao tamanho real do canvas (inclui mudanças da barra
+    // de endereço no mobile que window.resize não captura corretamente)
+    const ro = new ResizeObserver(handleResize)
+    ro.observe(canvas)
     window.addEventListener("resize", handleResize)
 
     return () => {
       if (refs.animationId) cancelAnimationFrame(refs.animationId)
+      ro.disconnect()
       window.removeEventListener("resize", handleResize)
       if (refs.mesh) {
         refs.scene?.remove(refs.mesh)
